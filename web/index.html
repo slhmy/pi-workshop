@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f8fafc" data-theme-color />
+    <title>Pi Workshop</title>
+    <script src="/theme.js?v=3"></script>
+    <link rel="stylesheet" href="/styles.css?v=13" />
+  </head>
+  <body>
+    <a class="skip-link" href="#composer-input">Skip to instruction</a>
+
+    <div class="shell">
+      <header class="masthead">
+        <a class="identity" href="/" aria-label="Pi Workshop home">
+          <span>
+            <strong>Pi Workshop</strong>
+            <small>conversation control</small>
+          </span>
+        </a>
+
+        <div class="session-actions">
+          <span class="queue-badge" data-queue-status hidden></span>
+          <div class="agent-state" data-agent-status data-state="connecting" role="status" aria-live="polite">
+            <span class="state-dot" aria-hidden="true"></span>
+            <span data-status-label>Connecting</span>
+          </div>
+          <button class="quiet-button refresh-button" type="button" data-hard-refresh aria-label="Hard refresh page" title="Hard refresh page">
+            <svg class="ui-icon refresh-icon" aria-hidden="true"><use href="/icons.svg?v=1#refresh-cw"></use></svg>
+            <span class="refresh-label">Refresh</span>
+          </button>
+          <button class="icon-button" type="button" data-theme-toggle aria-label="Switch color theme" title="Switch color theme">
+            <svg class="ui-icon" aria-hidden="true"><use data-theme-icon href="/icons.svg?v=1#moon"></use></svg>
+          </button>
+          <button class="quiet-button" type="button" data-new-session>
+            <span data-new-session-label>New session</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="conversation" aria-label="Conversation">
+          <div class="notice" data-notice hidden>
+            <span data-notice-text></span>
+            <button type="button" data-dismiss-notice aria-label="Dismiss notification">
+              <svg class="ui-icon" aria-hidden="true"><use href="/icons.svg?v=1#x"></use></svg>
+            </button>
+          </div>
+
+          <div class="transcript-wrap">
+            <div class="transcript" data-transcript role="log" aria-label="Conversation messages">
+              <div class="empty-state" data-empty-state>
+                <span class="eyebrow">Control surface 01</span>
+                <h1>Direct the work.<br />See it unfold.</h1>
+                <p>Give Pi one concrete instruction. Responses stay in the conversation; compact tool updates collect alongside it.</p>
+                <ul class="starter-notes" aria-label="Usage tips">
+                  <li><svg class="ui-icon" aria-hidden="true"><use href="/icons.svg?v=1#check"></use></svg>Send follow-ups while Pi is working</li>
+                  <li><svg class="ui-icon" aria-hidden="true"><use href="/icons.svg?v=1#check"></use></svg>Stop a run without losing your draft</li>
+                </ul>
+              </div>
+              <div class="message-list" data-message-list></div>
+            </div>
+            <button class="jump-button" type="button" data-jump-latest hidden>
+              Jump to latest
+              <svg class="ui-icon" aria-hidden="true"><use href="/icons.svg?v=1#arrow-down"></use></svg>
+            </button>
+          </div>
+
+          <form class="composer" data-composer>
+            <label class="sr-only" for="composer-input">Instruction for Pi</label>
+            <textarea
+              id="composer-input"
+              data-prompt
+              rows="1"
+              placeholder="Describe the next useful change…"
+              aria-describedby="composer-hint composer-queue-hint"
+              required
+            ></textarea>
+            <div class="composer-footer">
+              <div class="composer-guidance">
+                <span class="composer-hint" id="composer-hint">Enter to send · Shift+Enter for a new line</span>
+                <span class="queue-hint" id="composer-queue-hint" data-queue-hint hidden></span>
+              </div>
+              <div class="composer-actions">
+                <button class="abort-button" type="button" data-abort aria-keyshortcuts="Escape" hidden>
+                  <svg class="ui-icon stop-icon" aria-hidden="true"><use href="/icons.svg?v=1#square"></use></svg>
+                  <span data-abort-label>Stop run</span>
+                </button>
+                <button class="send-button" type="submit" data-send aria-keyshortcuts="Enter Control+Enter Meta+Enter">
+                  <span data-send-label>Send instruction</span>
+                  <svg class="ui-icon" aria-hidden="true"><use href="/icons.svg?v=1#arrow-up-right"></use></svg>
+                </button>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <aside class="activity-panel" data-activity-panel aria-label="Agent activity">
+          <button class="activity-heading" type="button" data-activity-toggle aria-expanded="true" aria-controls="activity-list">
+            <span>
+              <span class="activity-kicker">Run trace</span>
+              <strong>Activity</strong>
+            </span>
+            <span class="activity-summary">
+              <span data-activity-count>0 recent</span>
+              <svg class="ui-icon activity-chevron" aria-hidden="true"><use href="/icons.svg?v=1#chevron-down"></use></svg>
+            </span>
+          </button>
+          <div class="activity-overview" data-activity-overview>
+            <div class="trace-stage" data-trace-stage data-kind="idle">
+              <svg class="ui-icon" aria-hidden="true"><use href="/icons.svg?v=2#circle-dot"></use></svg>
+              <span>
+                <strong data-trace-title>Ready</strong>
+                <small data-trace-detail>Waiting for an instruction</small>
+              </span>
+            </div>
+            <dl class="trace-metrics">
+              <div><dt>Turns</dt><dd data-trace-turns>0</dd></div>
+              <div><dt>Tools</dt><dd data-trace-tools>0</dd></div>
+              <div><dt>Tokens</dt><dd data-trace-tokens>—</dd></div>
+              <div><dt>Elapsed</dt><dd data-trace-elapsed>—</dd></div>
+            </dl>
+          </div>
+          <ol class="activity-list" id="activity-list" data-activity-list>
+            <li class="activity-placeholder">Tool calls and run events will appear here without interrupting the conversation.</li>
+          </ol>
+        </aside>
+      </main>
+    </div>
+
+    <div class="sr-only" data-announcer aria-live="polite" aria-atomic="true"></div>
+
+    <template id="message-template">
+      <article class="message">
+        <div class="message-meta">
+          <span class="message-author"></span>
+          <time class="message-time" hidden></time>
+        </div>
+        <div class="message-body"></div>
+      </article>
+    </template>
+
+    <script type="module" src="/app.js?v=9"></script>
+  </body>
+</html>

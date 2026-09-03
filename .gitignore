@@ -1,0 +1,29 @@
+# Runtime data and session state
+data/
+sessions/
+storage/
+uploads/
+runtime/
+*.session
+*.session.*
+*.log
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+
+# Local configuration and sensitive files
+.env
+.env.*
+!.env.example
+secrets/
+credentials/
+
+# Temporary and editor files
+.cache/
+tmp/
+.temp/
+.DS_Store
+*.swp
+*.swo
+*~
