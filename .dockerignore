@@ -1,0 +1,16 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+data
+sessions
+storage
+uploads
+runtime
+secrets
+credentials
+*.log
+*.db
+*.sqlite
+.DS_Store
