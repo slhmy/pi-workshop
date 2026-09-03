@@ -14,6 +14,20 @@ for (const marker of ["data-transcript", "data-composer", "data-send", "data-age
   if (!page.includes(marker)) throw new Error(`required UI marker missing: ${marker}`);
 }
 
+const appResponse = await fetch(`${baseUrl}/app.js`);
+if (!appResponse.ok) throw new Error(`app request failed: ${appResponse.status}`);
+const app = await appResponse.text();
+for (const marker of ["generatedImages", "generated-image-gallery", 'generate_image: "Generate image"']) {
+  if (!app.includes(marker)) throw new Error(`generated image UI marker missing: ${marker}`);
+}
+
+const iconsResponse = await fetch(`${baseUrl}/icons.svg`);
+if (!iconsResponse.ok) throw new Error(`icons request failed: ${iconsResponse.status}`);
+const icons = await iconsResponse.text();
+for (const marker of ['id="image"', 'id="download"']) {
+  if (!icons.includes(marker)) throw new Error(`generated image icon missing: ${marker}`);
+}
+
 const stateResponse = await fetch(`${baseUrl}/api/state`);
 if (!stateResponse.ok) throw new Error(`Pi state request failed: ${stateResponse.status}`);
 

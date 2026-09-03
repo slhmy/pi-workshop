@@ -14,10 +14,11 @@ WORKDIR /opt/pi-control
 
 COPY --chown=node:node control/server.mjs control/acceptance.mjs control/CORE.md ./
 
-RUN mkdir -p /agent-data/workspace/web /agent-data/config /agent-data/sessions \
+RUN mkdir -p /agent-data/workspace/web /agent-data/workspace/.pi/extensions /agent-data/config /agent-data/sessions \
     && chown -R node:node /agent-data
 
 COPY --chown=node:node AGENTS.md .gitignore /agent-data/workspace/
+COPY --chown=node:node .pi/extensions/ /agent-data/workspace/.pi/extensions/
 COPY --chown=node:node web/ /agent-data/workspace/web/
 
 VOLUME ["/agent-data"]

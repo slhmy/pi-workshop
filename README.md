@@ -76,6 +76,22 @@ Persistent paths are:
 | `/agent-data/config` | Pi settings, models, skills, and extensions |
 | `/agent-data/sessions` | Conversation history |
 
+## Image generation
+
+When the active provider uses the OpenAI Responses protocol and exposes its
+built-in `image_generation` tool, ask Pi to create an image in ordinary
+language. The bundled `generate_image` extension reuses the active model and
+Pi's resolved provider authentication; no credential is sent to the browser.
+Generated PNG, JPEG, or WebP results appear as responsive conversation cards
+with open and download actions.
+
+The current implementation stores the encoded image in the Pi session so it
+survives refreshes and can be viewed from another device connected to the same
+session. Each image is limited to 16 MiB. Since generated images make session
+files larger and may incur separate provider charges, use a quota-limited
+provider credential. Providers without Responses `image_generation` support
+will return a controlled tool error instead of exposing their response body.
+
 The service exposes these endpoints:
 
 | Endpoint | Purpose |

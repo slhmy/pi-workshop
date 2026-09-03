@@ -724,6 +724,98 @@ button:disabled {
   border-color: color-mix(in srgb, var(--primary-foreground) 28%, transparent);
 }
 
+.message[data-kind="media"] {
+  width: min(960px, 96%);
+}
+
+.message[data-kind="media"] .message-body {
+  padding: 9px;
+  border-color: color-mix(in srgb, var(--primary) 22%, var(--border));
+  background: var(--card);
+}
+
+.generated-image-gallery,
+.generated-image {
+  width: 100%;
+  min-width: 0;
+}
+
+.generated-image-gallery {
+  display: grid;
+  gap: 12px;
+}
+
+.generated-image {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-muted);
+}
+
+.generated-image-preview {
+  display: grid;
+  min-width: 0;
+  place-items: center;
+  background:
+    linear-gradient(45deg, var(--card) 25%, transparent 25%, transparent 75%, var(--card) 75%),
+    linear-gradient(45deg, var(--card) 25%, transparent 25%, transparent 75%, var(--card) 75%);
+  background-position: 0 0, 10px 10px;
+  background-size: 20px 20px;
+}
+
+.generated-image-preview:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -3px;
+}
+
+.generated-image-preview img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  max-height: min(68dvh, 760px);
+  object-fit: contain;
+}
+
+.generated-image figcaption {
+  min-width: 0;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+
+.generated-image-action {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.generated-image-action:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.generated-image-action .ui-icon {
+  width: 13px;
+  height: 13px;
+}
+
 .message[data-kind="error"] .message-body {
   border-color: color-mix(in srgb, var(--danger) 28%, var(--border));
   background: var(--danger-soft);
@@ -1563,6 +1655,19 @@ button:disabled {
     padding: 11px 13px;
     font-size: 14px;
     line-height: 1.58;
+  }
+
+  .message[data-kind="media"] .message-body {
+    padding: 6px;
+  }
+
+  .generated-image-preview img {
+    max-height: 60dvh;
+  }
+
+  .generated-image figcaption {
+    min-height: 40px;
+    padding: 7px 8px;
   }
 
   .composer {
