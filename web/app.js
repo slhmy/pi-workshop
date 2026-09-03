@@ -15,6 +15,8 @@ const statusElement = document.querySelector("[data-agent-status]");
 const statusLabel = document.querySelector("[data-status-label]");
 const queueStatus = document.querySelector("[data-queue-status]");
 const queueHint = document.querySelector("[data-queue-hint]");
+const voiceInputButton = document.querySelector("[data-voice-input]");
+const voiceStatus = document.querySelector("[data-voice-status]");
 const activityPanel = document.querySelector("[data-activity-panel]");
 const activityToggle = document.querySelector("[data-activity-toggle]");
 const activityList = document.querySelector("[data-activity-list]");
@@ -61,6 +63,20 @@ let activityWasManuallyToggled = false;
 let autoFollow = true;
 let networkNoticeVisible = false;
 let lastQueueCount = 0;
+let speechRecognition = null;
+let voiceListening = false;
+let voiceStarting = false;
+let voiceStopping = false;
+let voiceAcceptResults = false;
+let voiceBaseText = "";
+let voiceLastError = "";
+const SpeechRecognitionApi = window.SpeechRecognition || window.webkitSpeechRecognition;
+const voiceInputSupported = Boolean(
+  typeof SpeechRecognitionApi === "function"
+  && window.isSecureContext
+  && SpeechRecognitionApi.prototype
+  && "processLocally" in SpeechRecognitionApi.prototype
+);
 const activeTools = new Map();
 const observedToolCallIds = new Set();
 const persistedToolElements = new Map();
@@ -198,6 +214,7 @@ function renderAgentState() {
 
   newSessionButton.disabled = sessionChanging || unavailable;
   newSessionLabel.textContent = sessionChanging ? "Starting…" : "New session";
+  voiceInputButton.disabled = !voiceInputSupported || sessionChanging || promptSending || unavailable;
   updateTraceOverview();
 }
 
@@ -1311,6 +1328,135 @@ function connectEvents() {
   });
 }
 
+function renderVoiceControl(message = "", kind = "idle") {
+  const active = voiceListening || voiceStarting || voiceStopping;
+  voiceInputButton.dataset.listening = String(active);
+  voiceInputButton.setAttribute("aria-pressed", String(active));
+  voiceInputButton.setAttribute("aria-label", active ? "Stop voice input" : "Start voice input");
+  voiceInputButton.title = active
+    ? "Stop voice input"
+    : "Start on-device voice input. Audio is not sent by this app.";
+  composer.dataset.voice = active ? "listening" : "idle";
+  voiceStatus.hidden = !message;
+  voiceStatus.dataset.kind = kind;
+  voiceStatus.textContent = message;
+}
+
+function finishVoiceInput(message, kind = "done") {
+  voiceListening = false;
+  voiceStarting = false;
+  voiceStopping = false;
+  voiceAcceptResults = false;
+  speechRecognition = null;
+  renderVoiceControl(message, kind);
+  renderAgentState();
+}
+
+function cancelVoiceInput(message = "") {
+  const recognition = speechRecognition;
+  speechRecognition = null;
+  voiceListening = false;
+  voiceStarting = false;
+  voiceStopping = false;
+  voiceAcceptResults = false;
+  voiceLastError = "";
+  try {
+    recognition?.abort();
+  } catch {
+    // The browser may already have ended recognition.
+  }
+  renderVoiceControl(message, message ? "done" : "idle");
+}
+
+function voiceRecognitionError(code) {
+  const errors = {
+    "audio-capture": "No microphone is available.",
+    network: "On-device voice recognition encountered a network error.",
+    "language-not-supported": "The on-device language pack is not available in this browser.",
+    "no-speech": "No speech was detected. Try again when ready.",
+    "not-allowed": "Microphone permission was denied.",
+    "service-not-allowed": "Voice recognition is blocked by this browser.",
+  };
+  return errors[code] || "Voice input stopped unexpectedly.";
+}
+
+function startVoiceInput() {
+  if (!voiceInputSupported || voiceStarting || voiceListening || voiceStopping) return;
+
+  const recognition = new SpeechRecognitionApi();
+  speechRecognition = recognition;
+  voiceStarting = true;
+  voiceAcceptResults = true;
+  voiceLastError = "";
+  voiceBaseText = promptInput.value.trimEnd();
+  recognition.lang = navigator.language || document.documentElement.lang || "en-US";
+  recognition.processLocally = true;
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  recognition.addEventListener("start", () => {
+    if (speechRecognition !== recognition) return;
+    voiceStarting = false;
+    voiceListening = true;
+    renderVoiceControl("Listening · speech is processed on this device", "listening");
+    renderAgentState();
+  });
+
+  recognition.addEventListener("result", (event) => {
+    if (speechRecognition !== recognition || !voiceAcceptResults) return;
+    const finalSegments = [];
+    const interimSegments = [];
+    for (let index = 0; index < event.results.length; index += 1) {
+      const transcriptText = event.results[index]?.[0]?.transcript;
+      if (typeof transcriptText !== "string" || !transcriptText.trim()) continue;
+      if (event.results[index].isFinal) finalSegments.push(transcriptText.trim());
+      else interimSegments.push(transcriptText.trim());
+    }
+    const spokenText = [...finalSegments, ...interimSegments].join(" ").trim();
+    promptInput.value = [voiceBaseText, spokenText].filter(Boolean).join(" ");
+    resizeComposer();
+  });
+
+  recognition.addEventListener("error", (event) => {
+    if (speechRecognition !== recognition) return;
+    voiceLastError = voiceRecognitionError(event.error);
+    finishVoiceInput(voiceLastError, "error");
+    announce(voiceLastError);
+  });
+
+  recognition.addEventListener("end", () => {
+    if (speechRecognition !== recognition) return;
+    const message = voiceLastError || "Voice input stopped. Review the text before sending.";
+    finishVoiceInput(message, voiceLastError ? "error" : "done");
+  });
+
+  renderVoiceControl("Starting microphone…", "listening");
+  renderAgentState();
+  try {
+    recognition.start();
+  } catch {
+    finishVoiceInput("Voice input could not be started.", "error");
+  }
+}
+
+function stopVoiceInput() {
+  if (!speechRecognition || voiceStopping) return;
+  voiceStopping = true;
+  renderVoiceControl("Finishing voice input…", "listening");
+  try {
+    speechRecognition.stop();
+  } catch {
+    finishVoiceInput("Voice input stopped. Review the text before sending.");
+  }
+}
+
+function initializeVoiceInput() {
+  if (!voiceInputSupported) return;
+  voiceInputButton.hidden = false;
+  renderVoiceControl();
+}
+
 function resizeComposer() {
   promptInput.style.height = "auto";
   promptInput.style.height = `${Math.min(promptInput.scrollHeight, 220)}px`;
@@ -1320,6 +1466,7 @@ async function submitPrompt() {
   const message = promptInput.value.trim();
   if (!message || promptSending) return;
 
+  if (voiceListening || voiceStarting || voiceStopping) cancelVoiceInput();
   const queued = agent.streaming;
   promptSending = true;
   agent.error = "";
@@ -1359,7 +1506,19 @@ composer.addEventListener("submit", (event) => {
   submitPrompt();
 });
 
-promptInput.addEventListener("input", resizeComposer);
+promptInput.addEventListener("input", () => {
+  if (voiceListening || voiceStarting || voiceStopping) {
+    cancelVoiceInput("Voice input stopped after keyboard editing.");
+  } else if (!voiceStatus.hidden) {
+    renderVoiceControl();
+  }
+  resizeComposer();
+});
+
+voiceInputButton.addEventListener("click", () => {
+  if (voiceListening || voiceStarting || voiceStopping) stopVoiceInput();
+  else startVoiceInput();
+});
 promptInput.addEventListener("keydown", (event) => {
   if (event.isComposing) return;
 
@@ -1404,6 +1563,7 @@ newSessionButton.addEventListener("click", async () => {
     : "";
   if (!window.confirm(`Start a new empty session?${activeWarning}\n\nThe current session remains stored separately.`)) return;
 
+  cancelVoiceInput();
   sessionChanging = true;
   renderAgentState();
   try {
@@ -1444,6 +1604,7 @@ jumpButton.addEventListener("click", () => scrollTranscript(true, true));
 dismissNotice.addEventListener("click", () => clearNotice());
 
 hardRefreshButton.addEventListener("click", () => {
+  cancelVoiceInput();
   hardRefreshButton.disabled = true;
   hardRefreshButton.dataset.refreshing = "true";
   const target = new URL(window.location.href);
@@ -1478,6 +1639,7 @@ syncActivityLayout(narrowLayout);
 listenForMediaChange(narrowLayout, syncActivityLayout);
 
 window.addEventListener("offline", () => {
+  if (voiceListening || voiceStarting || voiceStopping) cancelVoiceInput("Voice input stopped while offline.");
   agent.connection = "disconnected";
   setNotice("This device is offline. Your draft is safe in the composer.", "warning", true);
   renderAgentState();
@@ -1518,6 +1680,7 @@ window.setInterval(() => {
 }, 15_000);
 
 applyColorTheme(document.documentElement.dataset.theme);
+initializeVoiceInput();
 renderAgentState();
 Promise.allSettled([refreshState(), loadMessages()]);
 connectEvents();

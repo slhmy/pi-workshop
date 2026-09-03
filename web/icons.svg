@@ -40,6 +40,10 @@
   <symbol id="list-plus" viewBox="0 0 24 24">
     <path d="M11 12H3M16 6H3M11 18H3M18 9v6M15 12h6" />
   </symbol>
+  <symbol id="mic" viewBox="0 0 24 24">
+    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8" />
+  </symbol>
   <symbol id="moon" viewBox="0 0 24 24">
     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
   </symbol>

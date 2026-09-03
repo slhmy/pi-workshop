@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#f8fafc" data-theme-color />
     <title>Pi Workshop</title>
     <script src="/theme.js?v=3"></script>
-    <link rel="stylesheet" href="/styles.css?v=13" />
+    <link rel="stylesheet" href="/styles.css?v=14" />
   </head>
   <body>
     <a class="skip-link" href="#composer-input">Skip to instruction</a>
@@ -75,15 +75,29 @@
               data-prompt
               rows="1"
               placeholder="Describe the next useful change…"
-              aria-describedby="composer-hint composer-queue-hint"
+              aria-describedby="composer-hint composer-queue-hint composer-voice-hint"
               required
             ></textarea>
             <div class="composer-footer">
               <div class="composer-guidance">
                 <span class="composer-hint" id="composer-hint">Enter to send · Shift+Enter for a new line</span>
                 <span class="queue-hint" id="composer-queue-hint" data-queue-hint hidden></span>
+                <span class="voice-hint" id="composer-voice-hint" data-voice-status role="status" aria-live="polite" hidden></span>
               </div>
               <div class="composer-actions">
+                <button
+                  class="icon-button voice-button"
+                  type="button"
+                  data-voice-input
+                  data-listening="false"
+                  aria-label="Start voice input"
+                  aria-pressed="false"
+                  aria-controls="composer-input"
+                  title="Start voice input"
+                  hidden
+                >
+                  <svg class="ui-icon" aria-hidden="true"><use href="/icons.svg?v=3#mic"></use></svg>
+                </button>
                 <button class="abort-button" type="button" data-abort aria-keyshortcuts="Escape" hidden>
                   <svg class="ui-icon stop-icon" aria-hidden="true"><use href="/icons.svg?v=1#square"></use></svg>
                   <span data-abort-label>Stop run</span>
@@ -142,6 +156,6 @@
       </article>
     </template>
 
-    <script type="module" src="/app.js?v=9"></script>
+    <script type="module" src="/app.js?v=12"></script>
   </body>
 </html>

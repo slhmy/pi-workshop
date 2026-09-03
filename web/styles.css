@@ -885,7 +885,8 @@ button:disabled {
 }
 
 .composer-hint,
-.queue-hint {
+.queue-hint,
+.voice-hint {
   color: var(--muted);
   font-size: 10px;
   line-height: 1.4;
@@ -895,9 +896,39 @@ button:disabled {
   color: var(--warning);
 }
 
+.voice-hint {
+  max-width: 440px;
+  color: var(--primary);
+  overflow-wrap: anywhere;
+}
+
+.voice-hint[data-kind="error"] {
+  color: var(--danger);
+}
+
+.voice-hint[data-kind="done"] {
+  color: var(--muted-foreground);
+}
+
 .composer-actions {
   flex: 0 0 auto;
   gap: 7px;
+}
+
+.voice-button {
+  width: 38px;
+  min-height: 38px;
+  color: var(--muted-foreground);
+}
+
+.voice-button[data-listening="true"] {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.voice-button[data-listening="true"] .ui-icon {
+  animation: pulse 1.1s ease-in-out infinite;
 }
 
 .abort-button {
@@ -1549,9 +1580,10 @@ button:disabled {
     display: none;
   }
 
-  .queue-hint {
+  .queue-hint,
+  .voice-hint {
     display: block;
-    max-width: 160px;
+    max-width: min(44vw, 180px);
     font-size: 9px;
   }
 
