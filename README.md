@@ -1,9 +1,9 @@
 # Pi Workshop
 
-Pi Workshop is a self-hosted conversation UI for the
+Pi Workshop is a self-hosted conversation UI and autonomous container for the
 [Pi coding agent](https://github.com/earendil-works/pi). A small, fixed Node.js
 control plane runs Pi in RPC mode, streams its events to the browser, and serves
-a workspace that Pi can improve without replacing its own runtime.
+a persistent workspace in which Pi has broad engineering autonomy.
 
 ## Quick start
 
@@ -55,8 +55,10 @@ docker run -d --name pi-workshop-dev \
   ghcr.io/slhmy/pi-workshop:latest
 ```
 
-Pi is instructed to change only `web/`. The running control plane comes from
-the image under `/opt/pi-control`; changes to `control/` require rebuilding the
+Pi may change the entire repository, create additional applications and
+services, install dependencies, and evolve its own settings, skills,
+extensions, and user-installed runtime. The active control plane comes from the
+image under `/opt/pi-control`; changes to `control/` require rebuilding the
 image.
 
 ## Configuration
@@ -91,12 +93,14 @@ The service exposes these endpoints:
 The bundled Compose file binds only to loopback. The control API intentionally
 has no built-in user authentication; put an authenticated reverse proxy in
 front of it before any remote exposure. The recommended container settings run
-the process as the unprivileged `node` user with a read-only root filesystem,
-dropped capabilities, and no Docker socket.
+the process as the unprivileged `node` user with a read-only image filesystem,
+dropped capabilities, and no Docker socket. The persistent `/agent-data` volume
+remains writable, is first on the user tool `PATH`, and can contain an alternate
+Pi installation for the next restart.
 
-Pi still has full read/write and shell access inside its mounted workspace, and
-provider credentials are available to the Pi process. Use a dedicated,
-quota-limited API key and do not mount unrelated host directories.
+Pi has full read/write and shell access inside `/agent-data`, plus outbound
+network access. Provider credentials are available to the Pi process. Use a
+dedicated, quota-limited API key and do not mount unrelated host directories.
 
 The image runs as UID 1000. Ensure a bind-mounted checkout is writable by that
 UID. On SELinux hosts, add the appropriate `:Z` or `:z` relabel option after
