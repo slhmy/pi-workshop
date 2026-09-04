@@ -41,6 +41,7 @@ const messageTemplate = document.querySelector("#message-template");
 
 const agent = {
   connection: "connecting",
+  restReachable: false,
   lifecycle: "unknown",
   streaming: false,
   pending: 0,
@@ -171,8 +172,10 @@ function renderAgentState() {
     state = "disconnected";
     label = "Offline";
   } else if (agent.connection !== "connected") {
-    state = agent.connection === "connecting" ? "connecting" : "disconnected";
-    label = agent.connection === "connecting" ? "Connecting" : "Reconnecting";
+    state = agent.restReachable ? "disconnected" : agent.connection === "connecting" ? "connecting" : "disconnected";
+    label = agent.restReachable
+      ? "Live updates paused"
+      : agent.connection === "connecting" ? "Connecting" : "Reconnecting";
   } else if (agent.lifecycle === "restarting") {
     state = "error";
     label = "Pi is restarting";
@@ -1149,10 +1152,12 @@ async function loadMessages({ reportError = true } = {}) {
     const payload = await api("/api/messages");
     if (version !== sessionVersion || sessionChanging || request < appliedMessagesRequest) return;
     appliedMessagesRequest = request;
+    agent.restReachable = true;
     const messages = payload.messages || [];
     renderMessages(messages);
     renderPersistedActivities(messages);
   } catch (error) {
+    agent.restReachable = false;
     if (reportError) {
       const message = errorMessage(error, "Could not load conversation");
       setNotice(message);
@@ -1167,6 +1172,7 @@ async function refreshState({ reportError = true } = {}) {
   try {
     const state = await api("/api/state");
     if (version !== sessionVersion || sessionChanging) return;
+    agent.restReachable = true;
     agent.lifecycle = "ready";
     agent.error = "";
     agent.streaming = Boolean(state.isStreaming);
@@ -1180,6 +1186,7 @@ async function refreshState({ reportError = true } = {}) {
     }
     renderAgentState();
   } catch (error) {
+    agent.restReachable = false;
     if (reportError) {
       agent.error = errorMessage(error, "Pi state is unavailable");
       setNotice(agent.error);
@@ -1818,7 +1825,10 @@ window.setInterval(() => {
 
 window.setInterval(() => {
   if (document.visibilityState === "visible" && navigator.onLine !== false) {
-    refreshState({ reportError: false }).catch(() => {});
+    Promise.allSettled([
+      refreshState({ reportError: false }),
+      agent.connection === "connected" ? Promise.resolve() : loadMessages({ reportError: false }),
+    ]);
   }
 }, 15_000);
 
