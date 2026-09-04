@@ -671,6 +671,23 @@ function detailedActivityTime(timestamp) {
   }).format(new Date(timestamp));
 }
 
+function safeShellCommand(value) {
+  if (typeof value !== "string" || !value.trim()) return "";
+  if (/\/run\/secrets(?:\/|$)|private[\s_-]*key/iu.test(value)) return "Command redacted for safety";
+
+  let command = value
+    .replace(/[\r\n]+/gu, " ↵ ")
+    .replace(/\s+/gu, " ")
+    .trim();
+  command = command
+    .replace(/(\b(?:api[-_]?key|access[-_]?key|secret|token|password|passwd|credential)\s*[=:]\s*)("[^"]*"|'[^']*'|\S+)/giu, "$1[redacted]")
+    .replace(/((?:--?|\/)\s*(?:api[-_]?key|access[-_]?key|secret|token|password|passwd|credential)\s+)("[^"]*"|'[^']*'|\S+)/giu, "$1[redacted]")
+    .replace(/(\b(?:authorization|proxy-authorization)\s*:\s*bearer\s+)(\S+)/giu, "$1[redacted]")
+    .replace(/(\bbearer\s+)(\S+)/giu, "$1[redacted]")
+    .replace(/(\b(?:api[-_]?key|access[-_]?key|secret|token|password|passwd|credential)=)([^&\s]+)/giu, "$1[redacted]");
+  return command.length > 240 ? `${command.slice(0, 224)}…[truncated]` : command;
+}
+
 function toolActivityMetadata(toolName, args, options = {}) {
   const metadata = [];
   const target = safeWorkspaceTarget(args);
@@ -689,7 +706,8 @@ function toolActivityMetadata(toolName, args, options = {}) {
     else if (hasOffset) metadata.push(["Range", `From line ${offset}`]);
     else if (hasLimit) metadata.push(["Range", `First ${limit} lines`]);
   } else if (toolName === "bash") {
-    metadata.push(["Command", "Hidden for safety"]);
+    const command = safeShellCommand(args?.command);
+    if (command) metadata.push(["Command", command]);
   }
 
   if (options.startedAt) metadata.push(["Started", detailedActivityTime(options.startedAt)]);
@@ -760,7 +778,7 @@ function persistedToolDetail(record) {
   const duration = persistedToolDuration(record);
   if (duration) parts.push(duration);
   if (target) parts.push(target);
-  else if (record.toolName === "bash") parts.push("Workspace command");
+  else if (record.toolName === "bash") parts.push(safeShellCommand(record.args?.command) || "Workspace command");
   return parts.join(" · ");
 }
 
@@ -976,7 +994,7 @@ function toolActivityDetail(event) {
     }
     return target;
   }
-  if (event.toolName === "bash") return "Executing in workspace";
+  if (event.toolName === "bash") return safeShellCommand(event.args?.command) || "Executing in workspace";
   if (event.toolName === "generate_image") return "Creating one image";
   return "Tool running";
 }
