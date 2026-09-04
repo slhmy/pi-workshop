@@ -725,7 +725,7 @@ button:disabled {
 }
 
 .message[data-kind="media"] {
-  width: min(960px, 96%);
+  width: min(820px, 92%);
 }
 
 .message[data-kind="media"] .message-body {
