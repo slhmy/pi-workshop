@@ -838,6 +838,33 @@ function activityIcon(kind) {
   return "circle-dot";
 }
 
+function highlightShellCommand(container, value) {
+  const tokens = value.match(/(?:'[^']*'|"(?:\\.|[^"])*"|`(?:\\.|[^`])*`|#[^\n]*|\$\{[^}]*\}|\$[A-Za-z_][A-Za-z0-9_]*|--?[A-Za-z0-9][A-Za-z0-9_-]*|&&|\|\||>>|[|;&><]|\b\d+(?:\.\d+)?\b|\s+|.)/gu) || [];
+  let firstWord = true;
+  for (const token of tokens) {
+    if (/^\s+$/u.test(token)) {
+      container.append(document.createTextNode(token));
+      continue;
+    }
+
+    let kind = "argument";
+    if (token.startsWith("#")) kind = "comment";
+    else if (/^(?:'|\"|`)/u.test(token)) kind = "string";
+    else if (token.startsWith("$")) kind = "variable";
+    else if (/^(?:--?|\/)[A-Za-z0-9]/u.test(token)) kind = "flag";
+    else if (/^(?:&&|\|\||>>|[|;&><])$/u.test(token)) kind = "operator";
+    else if (/^\d/u.test(token)) kind = "number";
+    else if (token === "[redacted]") kind = "redacted";
+    else if (firstWord) kind = "command";
+
+    const part = document.createElement("span");
+    part.className = `shell-token shell-token-${kind}`;
+    part.textContent = token;
+    container.append(part);
+    if (kind !== "comment") firstWord = false;
+  }
+}
+
 function setActivityMetadata(item, entries) {
   const copy = item.querySelector(".activity-copy");
   const existing = copy.querySelector(".activity-details");
@@ -864,7 +891,7 @@ function setActivityMetadata(item, entries) {
     if (label === "Command") {
       const command = document.createElement("code");
       command.className = "activity-command";
-      command.textContent = value;
+      highlightShellCommand(command, value);
       description.append(command);
     } else {
       description.textContent = value;

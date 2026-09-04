@@ -321,7 +321,7 @@ button:disabled {
   max-width: 100%;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 304px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 16px;
   padding-top: 16px;
 }
@@ -1366,6 +1366,50 @@ button:disabled {
   overscroll-behavior: contain;
 }
 
+.shell-token-command {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.shell-token-flag {
+  color: var(--warning);
+}
+
+.shell-token-string {
+  color: var(--success);
+}
+
+.shell-token-variable {
+  color: #0891b2;
+}
+
+:root[data-theme="dark"] .shell-token-variable {
+  color: #67e8f9;
+}
+
+.shell-token-operator {
+  color: var(--muted-foreground);
+  font-weight: 700;
+}
+
+.shell-token-number {
+  color: #c2410c;
+}
+
+:root[data-theme="dark"] .shell-token-number {
+  color: #fdba74;
+}
+
+.shell-token-comment {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.shell-token-redacted {
+  color: var(--danger);
+  font-weight: 700;
+}
+
 .activity-side {
   display: grid;
   justify-items: end;
@@ -1461,6 +1505,30 @@ button:disabled {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+@media (min-width: 901px) {
+  .activity-details {
+    margin-top: 8px;
+    padding: 8px 10px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-muted);
+  }
+
+  .activity-metadata {
+    grid-template-columns: 76px minmax(0, 1fr);
+    gap: 8px 12px;
+    padding: 0;
+    background: transparent;
+    font-size: 10px;
+  }
+
+  .activity-command {
+    padding: 9px 10px;
+    font-size: 10px;
+    line-height: 1.6;
+  }
 }
 
 @media (max-width: 1040px) {
