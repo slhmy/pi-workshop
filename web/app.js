@@ -849,7 +849,7 @@ function highlightShellCommand(container, value) {
 
     let kind = "argument";
     if (token.startsWith("#")) kind = "comment";
-    else if (/^(?:'|\"|`)/u.test(token)) kind = "string";
+    else if (token.startsWith("'") || token.startsWith('"') || token.startsWith("`")) kind = "string";
     else if (token.startsWith("$")) kind = "variable";
     else if (/^(?:--?|\/)[A-Za-z0-9]/u.test(token)) kind = "flag";
     else if (/^(?:&&|\|\||>>|[|;&><])$/u.test(token)) kind = "operator";
