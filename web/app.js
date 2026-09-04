@@ -778,7 +778,7 @@ function persistedToolDetail(record) {
   const duration = persistedToolDuration(record);
   if (duration) parts.push(duration);
   if (target) parts.push(target);
-  else if (record.toolName === "bash") parts.push(safeShellCommand(record.args?.command) || "Workspace command");
+  else if (record.toolName === "bash") parts.push("Workspace command");
   return parts.join(" · ");
 }
 
@@ -853,7 +853,7 @@ function setActivityMetadata(item, entries) {
   const summary = document.createElement("summary");
   const list = document.createElement("dl");
   details.className = "activity-details";
-  details.open = wasOpen;
+  details.open = wasOpen || metadata.some(([label]) => label === "Command");
   summary.textContent = "Details";
   list.className = "activity-metadata";
 
@@ -861,7 +861,14 @@ function setActivityMetadata(item, entries) {
     const term = document.createElement("dt");
     const description = document.createElement("dd");
     term.textContent = label;
-    description.textContent = value;
+    if (label === "Command") {
+      const command = document.createElement("code");
+      command.className = "activity-command";
+      command.textContent = value;
+      description.append(command);
+    } else {
+      description.textContent = value;
+    }
     list.append(term, description);
   }
 

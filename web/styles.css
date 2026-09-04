@@ -1348,6 +1348,24 @@ button:disabled {
   overflow-wrap: anywhere;
 }
 
+.activity-command {
+  display: block;
+  max-width: 100%;
+  max-height: 9rem;
+  overflow: auto;
+  padding: 7px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--foreground);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overscroll-behavior: contain;
+}
+
 .activity-side {
   display: grid;
   justify-items: end;
